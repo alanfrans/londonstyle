@@ -43,6 +43,7 @@ echo -e "${GREEN}Using subscription: ${SUBSCRIPTION}${NC}"
 echo ""
 echo -e "${YELLOW}Azure OpenAI Configuration${NC}"
 echo "You can provide these values via environment variables or enter them now:"
+echo -e "${YELLOW}Note: For production, use Azure Key Vault to manage secrets securely.${NC}"
 echo ""
 
 if [ -z "$AZURE_OPENAI_ENDPOINT" ]; then
@@ -62,6 +63,9 @@ if [ -z "$AZURE_OPENAI_API_VERSION" ]; then
     read -p "Azure OpenAI API Version (default: 2024-02-15-preview): " AZURE_OPENAI_API_VERSION
 fi
 AZURE_OPENAI_API_VERSION=${AZURE_OPENAI_API_VERSION:-2024-02-15-preview}
+
+echo ""
+echo -e "${YELLOW}Security Note: Clear sensitive environment variables after deployment.${NC}"
 
 # Create resource group
 echo ""

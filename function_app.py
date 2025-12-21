@@ -2,7 +2,7 @@ import azure.functions as func
 import logging
 import json
 import os
-from openai import AzureOpenAI
+from openai import AzureOpenAI, APIError, APITimeoutError, RateLimitError
 from typing import Dict, Any
 
 app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
@@ -101,8 +101,17 @@ Respond ONLY with the simplified text, no explanations."""
         
     except ValueError:
         return create_response(400, {'error': 'Invalid JSON'})
+    except APITimeoutError:
+        logging.error("Azure OpenAI timeout in simplify function")
+        return create_response(504, {'error': 'AI service timeout. Please try again.'})
+    except RateLimitError:
+        logging.error("Azure OpenAI rate limit exceeded in simplify function")
+        return create_response(429, {'error': 'Rate limit exceeded. Please try again later.'})
+    except APIError as e:
+        logging.error(f"Azure OpenAI API error in simplify function: {type(e).__name__}")
+        return create_response(502, {'error': 'AI service error. Please try again.'})
     except Exception as e:
-        logging.error(f"Error in simplify function: {type(e).__name__}")
+        logging.error(f"Unexpected error in simplify function: {type(e).__name__}")
         return create_response(500, {'error': 'Internal server error'})
 
 @app.route(route="adjust-tone", methods=["POST"])
@@ -189,8 +198,17 @@ Respond ONLY with the adjusted text, no explanations."""
         
     except ValueError:
         return create_response(400, {'error': 'Invalid JSON'})
+    except APITimeoutError:
+        logging.error("Azure OpenAI timeout in adjust_tone function")
+        return create_response(504, {'error': 'AI service timeout. Please try again.'})
+    except RateLimitError:
+        logging.error("Azure OpenAI rate limit exceeded in adjust_tone function")
+        return create_response(429, {'error': 'Rate limit exceeded. Please try again later.'})
+    except APIError as e:
+        logging.error(f"Azure OpenAI API error in adjust_tone function: {type(e).__name__}")
+        return create_response(502, {'error': 'AI service error. Please try again.'})
     except Exception as e:
-        logging.error(f"Error in adjust_tone function: {type(e).__name__}")
+        logging.error(f"Unexpected error in adjust_tone function: {type(e).__name__}")
         return create_response(500, {'error': 'Internal server error'})
 
 @app.route(route="make-skimmable", methods=["POST"])
@@ -278,8 +296,17 @@ Respond with the formatted text only."""
         
     except ValueError:
         return create_response(400, {'error': 'Invalid JSON'})
+    except APITimeoutError:
+        logging.error("Azure OpenAI timeout in make_skimmable function")
+        return create_response(504, {'error': 'AI service timeout. Please try again.'})
+    except RateLimitError:
+        logging.error("Azure OpenAI rate limit exceeded in make_skimmable function")
+        return create_response(429, {'error': 'Rate limit exceeded. Please try again later.'})
+    except APIError as e:
+        logging.error(f"Azure OpenAI API error in make_skimmable function: {type(e).__name__}")
+        return create_response(502, {'error': 'AI service error. Please try again.'})
     except Exception as e:
-        logging.error(f"Error in make_skimmable function: {type(e).__name__}")
+        logging.error(f"Unexpected error in make_skimmable function: {type(e).__name__}")
         return create_response(500, {'error': 'Internal server error'})
 
 @app.route(route="detect-jargon", methods=["POST"])
@@ -365,8 +392,8 @@ Respond ONLY with the JSON array, no other text."""
         try:
             jargon_list = json.loads(jargon_response)
         except json.JSONDecodeError as e:
-            # If parsing fails, log and return empty list
-            logging.warning(f"Failed to parse jargon detection response: {jargon_response[:100]}")
+            # If parsing fails, log without exposing user content
+            logging.warning(f"Failed to parse jargon detection response. Response length: {len(jargon_response)} chars")
             jargon_list = []
         
         return create_response(200, {
@@ -377,8 +404,17 @@ Respond ONLY with the JSON array, no other text."""
         
     except ValueError:
         return create_response(400, {'error': 'Invalid JSON'})
+    except APITimeoutError:
+        logging.error("Azure OpenAI timeout in detect_jargon function")
+        return create_response(504, {'error': 'AI service timeout. Please try again.'})
+    except RateLimitError:
+        logging.error("Azure OpenAI rate limit exceeded in detect_jargon function")
+        return create_response(429, {'error': 'Rate limit exceeded. Please try again later.'})
+    except APIError as e:
+        logging.error(f"Azure OpenAI API error in detect_jargon function: {type(e).__name__}")
+        return create_response(502, {'error': 'AI service error. Please try again.'})
     except Exception as e:
-        logging.error(f"Error in detect_jargon function: {type(e).__name__}")
+        logging.error(f"Unexpected error in detect_jargon function: {type(e).__name__}")
         return create_response(500, {'error': 'Internal server error'})
 
 @app.route(route="health", methods=["GET"])
