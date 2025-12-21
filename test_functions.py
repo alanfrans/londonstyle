@@ -18,7 +18,7 @@ def print_response(title, response):
     print(f"Status: {response.status_code}")
     try:
         print(json.dumps(response.json(), indent=2))
-    except:
+    except (json.JSONDecodeError, ValueError):
         print(response.text)
 
 def test_health():

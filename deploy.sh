@@ -39,14 +39,28 @@ az account show &> /dev/null || {
 SUBSCRIPTION=$(az account show --query name -o tsv)
 echo -e "${GREEN}Using subscription: ${SUBSCRIPTION}${NC}"
 
-# Prompt for environment variables
+# Prompt for environment variables or read from environment
 echo ""
-echo -e "${YELLOW}Please provide the following Azure OpenAI configuration:${NC}"
-read -p "Azure OpenAI Endpoint (e.g., https://your-resource.openai.azure.com/): " AZURE_OPENAI_ENDPOINT
-read -sp "Azure OpenAI API Key: " AZURE_OPENAI_API_KEY
+echo -e "${YELLOW}Azure OpenAI Configuration${NC}"
+echo "You can provide these values via environment variables or enter them now:"
 echo ""
-read -p "Azure OpenAI Deployment Name: " AZURE_OPENAI_DEPLOYMENT_NAME
-read -p "Azure OpenAI API Version (default: 2024-02-15-preview): " AZURE_OPENAI_API_VERSION
+
+if [ -z "$AZURE_OPENAI_ENDPOINT" ]; then
+    read -p "Azure OpenAI Endpoint (e.g., https://your-resource.openai.azure.com/): " AZURE_OPENAI_ENDPOINT
+fi
+
+if [ -z "$AZURE_OPENAI_API_KEY" ]; then
+    read -sp "Azure OpenAI API Key: " AZURE_OPENAI_API_KEY
+    echo ""
+fi
+
+if [ -z "$AZURE_OPENAI_DEPLOYMENT_NAME" ]; then
+    read -p "Azure OpenAI Deployment Name: " AZURE_OPENAI_DEPLOYMENT_NAME
+fi
+
+if [ -z "$AZURE_OPENAI_API_VERSION" ]; then
+    read -p "Azure OpenAI API Version (default: 2024-02-15-preview): " AZURE_OPENAI_API_VERSION
+fi
 AZURE_OPENAI_API_VERSION=${AZURE_OPENAI_API_VERSION:-2024-02-15-preview}
 
 # Create resource group

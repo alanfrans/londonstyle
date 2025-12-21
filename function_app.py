@@ -28,7 +28,7 @@ def create_response(status_code: int, body: Dict[str, Any]) -> func.HttpResponse
     )
     # Add privacy headers
     response.headers['X-Content-Type-Options'] = 'nosniff'
-    response.headers['X-Frame-Options'] = 'DENY'
+    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
     response.headers['X-Data-Retention'] = 'ephemeral'
     response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, private'
     return response
@@ -102,7 +102,7 @@ Respond ONLY with the simplified text, no explanations."""
     except ValueError:
         return create_response(400, {'error': 'Invalid JSON'})
     except Exception as e:
-        logging.error(f"Error in simplify function: {str(e)}")
+        logging.error(f"Error in simplify function: {type(e).__name__}")
         return create_response(500, {'error': 'Internal server error'})
 
 @app.route(route="adjust-tone", methods=["POST"])
@@ -190,7 +190,7 @@ Respond ONLY with the adjusted text, no explanations."""
     except ValueError:
         return create_response(400, {'error': 'Invalid JSON'})
     except Exception as e:
-        logging.error(f"Error in adjust_tone function: {str(e)}")
+        logging.error(f"Error in adjust_tone function: {type(e).__name__}")
         return create_response(500, {'error': 'Internal server error'})
 
 @app.route(route="make-skimmable", methods=["POST"])
@@ -279,7 +279,7 @@ Respond with the formatted text only."""
     except ValueError:
         return create_response(400, {'error': 'Invalid JSON'})
     except Exception as e:
-        logging.error(f"Error in make_skimmable function: {str(e)}")
+        logging.error(f"Error in make_skimmable function: {type(e).__name__}")
         return create_response(500, {'error': 'Internal server error'})
 
 @app.route(route="detect-jargon", methods=["POST"])
@@ -364,8 +364,9 @@ Respond ONLY with the JSON array, no other text."""
         # Parse the JSON response
         try:
             jargon_list = json.loads(jargon_response)
-        except json.JSONDecodeError:
-            # If parsing fails, return empty list
+        except json.JSONDecodeError as e:
+            # If parsing fails, log and return empty list
+            logging.warning(f"Failed to parse jargon detection response: {jargon_response[:100]}")
             jargon_list = []
         
         return create_response(200, {
@@ -377,7 +378,7 @@ Respond ONLY with the JSON array, no other text."""
     except ValueError:
         return create_response(400, {'error': 'Invalid JSON'})
     except Exception as e:
-        logging.error(f"Error in detect_jargon function: {str(e)}")
+        logging.error(f"Error in detect_jargon function: {type(e).__name__}")
         return create_response(500, {'error': 'Internal server error'})
 
 @app.route(route="health", methods=["GET"])
