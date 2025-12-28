@@ -64,13 +64,13 @@ cd src/LondonStyle.API
 dotnet run
 ```
 
-The API will start on `https://localhost:5001` (HTTPS) and `http://localhost:5000` (HTTP).
+The API will start on `https://localhost:7169` (HTTPS) and `http://localhost:5037` (HTTP).
 
 ### 5. Access Swagger UI
 
 Open your browser and navigate to:
 ```
-https://localhost:5001/swagger
+https://localhost:7169/swagger
 ```
 
 ## API Endpoints

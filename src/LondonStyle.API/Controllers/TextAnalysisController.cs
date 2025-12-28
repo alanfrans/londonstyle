@@ -82,9 +82,3 @@ public class TextAnalysisController : ControllerBase
         return Ok(new { Status = "Healthy", Service = "LondonStyle Text Analysis API" });
     }
 }
-
-public class SimplifySentenceRequest
-{
-    public string Sentence { get; set; } = string.Empty;
-    public int TargetGradeLevel { get; set; } = 7;
-}
