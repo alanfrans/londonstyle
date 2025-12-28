@@ -1,0 +1,31 @@
+@LondonStyle.API_HostAddress = http://localhost:5037
+
+### Health Check
+GET {{LondonStyle.API_HostAddress}}/api/textanalysis/health
+Accept: application/json
+
+###
+
+### Analyze Text
+POST {{LondonStyle.API_HostAddress}}/api/textanalysis/analyze
+Content-Type: application/json
+
+{
+  "text": "The document was reviewed by the committee. It was determined that the budget allocation requires immediate attention.",
+  "tone": "GovernmentProfessional",
+  "targetGradeLevel": 7
+}
+
+###
+
+### Simplify Sentence
+POST {{LondonStyle.API_HostAddress}}/api/textanalysis/simplify
+Content-Type: application/json
+
+{
+  "sentence": "The aforementioned documentation was thoroughly examined by the oversight committee.",
+  "targetGradeLevel": 7
+}
+
+###
+
