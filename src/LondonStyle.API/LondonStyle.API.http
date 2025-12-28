@@ -1,0 +1,6 @@
+@LondonStyle.API_HostAddress = http://localhost:5037
+
+GET {{LondonStyle.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
