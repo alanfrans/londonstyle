@@ -55,3 +55,17 @@ htmlcov/
 # Environment
 .env
 .env.local
+/.vs
+/tests/LondonStyle.Tests/bin/Debug/net8.0
+/tests/LondonStyle.Tests/obj/Debug/net8.0
+/src/LondonStyle.API/bin/Debug/net8.0
+/src/LondonStyle.API/obj
+/src/LondonStyle.Core/bin/Debug/net8.0
+/src/LondonStyle.Core/obj/Debug/net8.0
+/src/LondonStyle.Infrastructure/bin/Debug/net8.0
+/src/LondonStyle.Infrastructure/obj/Debug/net8.0
+/src/LondonStyle.Functions/bin/Debug/net8.0
+/src/LondonStyle.Functions/obj
+/src/LondonStyle.Core/obj
+/src/LondonStyle.Infrastructure/obj
+/tests/LondonStyle.Tests/obj
