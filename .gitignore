@@ -69,3 +69,4 @@ htmlcov/
 /src/LondonStyle.Core/obj
 /src/LondonStyle.Infrastructure/obj
 /tests/LondonStyle.Tests/obj
+/src/LondonStyle.Functions

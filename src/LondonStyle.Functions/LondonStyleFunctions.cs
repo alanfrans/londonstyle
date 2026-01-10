@@ -375,4 +375,124 @@ Respond with the formatted text only.";
             version = "1.0.0"
         });
     }
+
+    [Function("analyze")]
+    public async Task<HttpResponseData> Analyze(
+        [HttpTrigger(AuthorizationLevel.Function, "post", Route = "textanalysis/analyze")] HttpRequestData req)
+    {
+        _logger.LogInformation("Analyze function processed a request.");
+
+        AnalyzeRequest? payload;
+        try
+        {
+            payload = await ReadBodyAsync<AnalyzeRequest>(req);
+        }
+        catch
+        {
+            return await HttpResponseHelpers.Json(req, HttpStatusCode.BadRequest, new { error = "Invalid JSON" });
+        }
+
+        if (string.IsNullOrWhiteSpace(payload?.Text))
+            return await HttpResponseHelpers.Json(req, HttpStatusCode.BadRequest, new { error = "Missing required field: text" });
+
+        var targetGradeLevel = payload.TargetGradeLevel ?? 8;
+
+        try
+        {
+            var client = OpenAIClientFactory.Create();
+            var deployment = OpenAIClientFactory.GetDeploymentName();
+
+            var systemPrompt = @"You are a Plain Language analysis expert for government communications.
+Analyze the given text and identify issues that affect readability.
+
+For each issue found, provide:
+- type: One of 'VeryHardToRead', 'HardToRead', 'ComplexWord', 'Jargon', 'PassiveVoice', 'LongSentence', 'UndefinedAcronym', 'GrammarIssue'
+- position: The character index where the issue starts (0-based)
+- length: The number of characters the issue spans
+- description: A brief explanation of the issue
+- suggestion: A plain language alternative or fix
+
+Also estimate the current grade level (Flesch-Kincaid) of the text.
+
+Format your response as JSON with this exact structure:
+{
+  ""gradeLevel"": 12.5,
+  ""issues"": [
+    {
+      ""type"": ""ComplexWord"",
+      ""position"": 10,
+      ""length"": 8,
+      ""description"": ""'Utilize' is unnecessarily complex"",
+      ""suggestion"": ""use""
+    }
+  ]
+}
+
+Respond ONLY with valid JSON, no other text.";
+
+            var userPrompt = $"Analyze this text for plain language issues (target: grade {targetGradeLevel}): {payload.Text}";
+            var raw = await ChatAsync(client, deployment, systemPrompt, userPrompt, 0.2f, 2000);
+
+            // Parse the AI response
+            double gradeLevel = 10.0;
+            var issues = new List<TextIssue>();
+
+            try
+            {
+                using var doc = JsonDocument.Parse(raw);
+                var root = doc.RootElement;
+
+                if (root.TryGetProperty("gradeLevel", out var gradeProp))
+                {
+                    gradeLevel = gradeProp.GetDouble();
+                }
+
+                if (root.TryGetProperty("issues", out var issuesProp) && issuesProp.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var item in issuesProp.EnumerateArray())
+                    {
+                        var type = item.TryGetProperty("type", out var t) ? t.GetString() ?? "ComplexWord" : "ComplexWord";
+                        var position = item.TryGetProperty("position", out var p) ? p.GetInt32() : 0;
+                        var length = item.TryGetProperty("length", out var l) ? l.GetInt32() : 1;
+                        var description = item.TryGetProperty("description", out var d) ? d.GetString() ?? "" : "";
+                        var suggestion = item.TryGetProperty("suggestion", out var s) ? s.GetString() : null;
+
+                        issues.Add(new TextIssue(type, position, length, description, suggestion));
+                    }
+                }
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogWarning(ex, "Failed to parse analyze response. Response: {Response}", raw);
+            }
+
+            return await HttpResponseHelpers.Json(req, HttpStatusCode.OK, new
+            {
+                originalGradeLevel = gradeLevel,
+                targetGradeLevel,
+                issues = issues.ToArray(),
+                aiRevised = false
+            });
+        }
+        catch (RequestFailedException ex) when (ex.Status == 429)
+        {
+            _logger.LogError(ex, "Azure OpenAI rate limit exceeded in analyze function");
+            return await HttpResponseHelpers.Json(req, (HttpStatusCode)429, new { error = "Rate limit exceeded. Please try again later." });
+        }
+        catch (TaskCanceledException ex)
+        {
+            _logger.LogError(ex, "Azure OpenAI timeout in analyze function");
+            return await HttpResponseHelpers.Json(req, HttpStatusCode.GatewayTimeout, new { error = "AI service timeout. Please try again." });
+        }
+        catch (RequestFailedException ex)
+        {
+            _logger.LogError(ex, "Azure OpenAI API error in analyze function");
+            return await HttpResponseHelpers.Json(req, HttpStatusCode.BadGateway, new { error = "AI service error. Please try again." });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error in analyze function");
+            return await HttpResponseHelpers.Json(req, HttpStatusCode.InternalServerError, new { error = "Internal server error" });
+        }
+    }
 }
