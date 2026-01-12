@@ -1,0 +1,72 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Azure Functions
+.venv/
+.python_packages/
+local.settings.json
+.vscode/
+__blobstorage__/
+__queuestorage__/
+__azurite_db*__.json
+.funcignore
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+*.code-workspace
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Logs
+*.log
+
+# Environment
+.env
+.env.local
+/.vs
+/tests/LondonStyle.Tests/bin/Debug/net8.0
+/tests/LondonStyle.Tests/obj/Debug/net8.0
+/src/LondonStyle.API/bin/Debug/net8.0
+/src/LondonStyle.API/obj
+/src/LondonStyle.Core/bin/Debug/net8.0
+/src/LondonStyle.Core/obj/Debug/net8.0
+/src/LondonStyle.Infrastructure/bin/Debug/net8.0
+/src/LondonStyle.Infrastructure/obj/Debug/net8.0
+/src/LondonStyle.Functions/bin/Debug/net8.0
+/src/LondonStyle.Functions/obj
+/src/LondonStyle.Core/obj
+/src/LondonStyle.Infrastructure/obj
+/tests/LondonStyle.Tests/obj
+/src/LondonStyle.Functions
